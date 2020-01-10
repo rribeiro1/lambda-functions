@@ -33,16 +33,16 @@ jobs:
 
       # Run linter and tests
       # flake8 --exclude=venv* --statistics
+      # python3 -m pytest --cov-report=xml term-missing --cov=.
       - run:
           name: Run Tests
           command: |
             . venv/bin/activate
-            python3 -m pytest --cov-report term-missing --cov=.
-            python3 -m coverage json
+            python3 -m pytest --cov-report xml --cov=.
 
 
       - run:
           name: Uploading Coverage Tests
           command: |
-            ./cc-test-reporter format-coverage -t coverage.py -o codeclimate.json coverage.json
-            ./cc-test-reporter upload-coverage -i codeclimate.json
+            ./cc-test-reporter format-coverage -t coverage.py -o codeclimate.xml coverage.xml
+            ./cc-test-reporter upload-coverage -i codeclimate.xml
