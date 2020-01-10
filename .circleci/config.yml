@@ -54,6 +54,9 @@ jobs:
             ./cc-test-reporter format-coverage -t coverage.py -o codeclimate.xml coverage.xml
             ./cc-test-reporter upload-coverage -i codeclimate.xml
 
+      - persist_to_workspace:
+          root: ~/app
+
   deploy_on_development:
     docker:
       - image: circleci/python:3-node
