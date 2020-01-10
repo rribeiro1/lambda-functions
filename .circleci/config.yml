@@ -70,9 +70,9 @@ jobs:
           at: ~/app
 
       - run:
-        name: Install Serverless
-        command: |
-          npm install -g serverless
+          name: Install Serverless
+          command: |
+            npm install -g serverless
 
   deploy_on_staging:
     docker:
