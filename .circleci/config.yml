@@ -61,7 +61,7 @@ jobs:
 
   deploy_on_development:
     docker:
-      - image: mikesir87/aws-cli
+      - image: circleci/python:3-node
 
     working_directory: ~/app
 
