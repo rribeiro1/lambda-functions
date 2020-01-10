@@ -44,6 +44,5 @@ jobs:
       - run:
           name: Uploading Coverage Tests
           command: |
-            ls -ltra
             ./cc-test-reporter format-coverage -t coverage.py -o codeclimate.json coverage.json
             ./cc-test-reporter upload-coverage -i codeclimate.json
