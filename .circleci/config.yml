@@ -47,14 +47,99 @@ jobs:
             . venv/bin/activate
             python3 -m pytest --cov-report xml --cov=.
             python3 -m coverage report
-      - store_test_results: # Upload test results for display in Test Summary: https://circleci.com/docs/2.0/collect-test-data/
-          path: test-results
-      - store_artifacts: # Upload test summary for display in Artifacts: https://circleci.com/docs/2.0/artifacts/
-          path: test-results
-          destination: tr1
+      #- store_test_results: # Upload test results for display in Test Summary: https://circleci.com/docs/2.0/collect-test-data/
+      #    path: test-results
+      #- store_artifacts: # Upload test summary for display in Artifacts: https://circleci.com/docs/2.0/artifacts/
+      #    path: test-results
+      #    destination: tr1
 
       - run:
           name: Uploading Coverage Tests
           command: |
             ./cc-test-reporter format-coverage -t coverage.py -o codeclimate.xml coverage.xml
             ./cc-test-reporter upload-coverage -i codeclimate.xml
+
+  deploy_on_development:
+    working_directory: ~/app
+
+  deploy_on_staging:
+    working_directory: ~/app
+
+  deploy_on_production:
+    working_directory: ~/app
+
+# define workflows that are triggered on different events
+workflows:
+  version: 2
+
+# run on every commit
+  build:
+    jobs:
+      - build:
+          filters:
+            branches:
+              ignore: /master/
+      - approve_build_container:
+          type: approval
+          requires:
+            - build
+          filters:
+            branches:
+              ignore: /master/
+      - build_container:
+          requires:
+            - approve_build_container
+          filters:
+            branches:
+              ignore: /master/
+      - approve_development_deployment:
+          type: approval
+          requires:
+            - build_container
+          filters:
+            branches:
+              ignore: /master/
+      - approve_staging_deployment:
+          type: approval
+          requires:
+            - build_container
+          filters:
+            branches:
+              ignore: /master/
+      - deploy_to_k8s_development:
+          requires:
+            - approve_development_deployment
+          filters:
+            branches:
+              ignore: /master/
+      - deploy_to_k8s_staging:
+          requires:
+            - approve_staging_deployment
+          filters:
+            branches:
+              ignore: /master/
+
+  build_and_deploy:
+    jobs:
+      - build:
+          filters:
+            branches:
+              only: master
+      - build_container:
+          requires:
+            - build
+          filters:
+            branches:
+              only: master
+      - deploy_to_k8s_staging:
+          requires:
+            - build_container
+          filters:
+            branches:
+              only: master
+      - deploy_to_k8s_production:
+          requires:
+            - deploy_to_k8s_staging
+          filters:
+            branches:
+              only: master
