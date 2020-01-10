@@ -21,7 +21,6 @@ jobs:
             python3 -m venv venv
             . venv/bin/activate
             pip install -r requirements.txt
-            yarn install --frozen-lockfile
             curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
             chmod +x ./cc-test-reporter
 
@@ -70,9 +69,16 @@ jobs:
             - yarn-packages-{{ checksum "yarn.lock" }}
 
       - run:
-          name: Install Serverless
+          name: Install Serverless and dependencies
           command: |
             sudo npm install -g serverless
+            yarn install --frozen-lockfile
+  
+      - save_cache:
+          name: Save Yarn Package Cache
+          key: yarn-packages-{{ checksum "yarn.lock" }}
+          paths:
+            - ~/.cache/yarn
 
   deploy_on_staging:
     docker:
