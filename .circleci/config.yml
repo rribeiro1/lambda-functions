@@ -6,23 +6,26 @@ jobs:
     working_directory: ~/app
     docker:
       - image: circleci/python:3-node
-      #- image: circleci/python:3.7
 
     steps:
       - checkout
       - run: sudo chown -R circleci:circleci /usr/local/bin
       - run: sudo chown -R circleci:circleci /usr/local/lib/python3.8/site-packages
       - restore_cache:
+          name: Restore Pip Package Cache
           key: deps-{{ .Branch }}-{{ checksum "requirements.txt" }}
+      - restore_cache:
+          name: Restore Yarn Package Cache
+          keys:
+            - yarn-packages-{{ checksum "yarn.lock" }}
 
-      # Create virtual env and install dependencies
       - run:
           name: install dependencies
           command: |
             python3 -m venv venv
             . venv/bin/activate
             pip install -r requirements.txt
-            yarn install
+            yarn install --frozen-lockfile
             curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
             chmod +x ./cc-test-reporter
 
@@ -32,13 +35,7 @@ jobs:
             - ".venv"
             - "/usr/local/bin"
             - "/usr/local/lib/python3.8/site-packages"
-
-      #- run:
-      #    name: Code Checker
-      #    command: |
-      #      flake8 --exclude=venv* --statistics
             
-      # Run linter and tests
       - run:
           name: Run Tests
           command: |
