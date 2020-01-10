@@ -61,12 +61,24 @@ jobs:
 
   deploy_on_development:
     working_directory: ~/app
+    steps:
+      - run:
+        command: |
+          ls ltra -
 
   deploy_on_staging:
     working_directory: ~/app
+    steps:
+      - run:
+        command: |
+          ls ltra -
 
   deploy_on_production:
     working_directory: ~/app
+    steps:
+      - run:
+        command: |
+          ls ltra -
 
 # define workflows that are triggered on different events
 workflows:
