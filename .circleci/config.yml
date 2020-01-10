@@ -45,6 +45,11 @@ jobs:
             . venv/bin/activate
             python3 -m pytest --cov-report xml --cov=.
             python3 -m coverage report
+      - store_test_results: # Upload test results for display in Test Summary: https://circleci.com/docs/2.0/collect-test-data/
+          path: test-results
+      - store_artifacts: # Upload test summary for display in Artifacts: https://circleci.com/docs/2.0/artifacts/
+          path: test-results
+          destination: tr1
 
       - run:
           name: Uploading Coverage Tests
