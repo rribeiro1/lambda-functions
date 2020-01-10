@@ -5,7 +5,8 @@ jobs:
       CC_TEST_REPORTER_ID: 3c2ff1b7a81154fdff569cdfc65990f9b3c4a9feb49b69f4f9cfae2495d8bcf5
     working_directory: ~/app
     docker:
-      - image: circleci/python:3.7
+      - image: circleci/python:3-node
+      #- image: circleci/python:3.7
 
     steps:
       - checkout
