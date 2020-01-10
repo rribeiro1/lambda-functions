@@ -79,40 +79,27 @@ workflows:
           filters:
             branches:
               ignore: /master/
-      - approve_build_container:
+      - approve_development_deployment:
           type: approval
           requires:
             - build
           filters:
             branches:
               ignore: /master/
-      - build_container:
-          requires:
-            - approve_build_container
-          filters:
-            branches:
-              ignore: /master/
-      - approve_development_deployment:
-          type: approval
-          requires:
-            - build_container
-          filters:
-            branches:
-              ignore: /master/
       - approve_staging_deployment:
           type: approval
           requires:
-            - build_container
+            - build
           filters:
             branches:
               ignore: /master/
-      - deploy_to_k8s_development:
+      - deploy_on_development:
           requires:
             - approve_development_deployment
           filters:
             branches:
               ignore: /master/
-      - deploy_to_k8s_staging:
+      - deploy_on_staging:
           requires:
             - approve_staging_deployment
           filters:
@@ -125,21 +112,15 @@ workflows:
           filters:
             branches:
               only: master
-      - build_container:
+      - deploy_on_staging:
           requires:
             - build
           filters:
             branches:
               only: master
-      - deploy_to_k8s_staging:
+      - deploy_on_production:
           requires:
-            - build_container
-          filters:
-            branches:
-              only: master
-      - deploy_to_k8s_production:
-          requires:
-            - deploy_to_k8s_staging
+            - deploy_on_staging
           filters:
             branches:
               only: master
