@@ -63,21 +63,26 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/app
+  
       - restore_cache:
           name: Restore Yarn Package Cache
           keys:
-            - yarn-packages-{{ checksum "yarn.lock" }}
+            - yarn-{{ checksum "yarn.lock" }}
 
       - run:
-          name: Install Serverless and dependencies
+          name: Install Dependencies
           command: |
             sudo npm install -g serverless
             yarn install --frozen-lockfile
+            export AWS_ACCESS_KEY_ID="${DEPLOY_DEVELOPMENT_AWS_ACCESS_KEY_ID}"
+            export AWS_SECRET_ACCESS_KEY="${DEPLOY_DEVELOPMENT_AWS_SECRET_ACCESS_KEY}"
+            serverless deploy -s development
   
       - save_cache:
           name: Save Yarn Package Cache
-          key: yarn-packages-{{ checksum "yarn.lock" }}
+          key: yarn-{{ checksum "yarn.lock" }}
           paths:
+            - node_modules
             - ~/.cache/yarn
 
   deploy_on_staging:
@@ -88,8 +93,8 @@ jobs:
 
     steps:
       - run:
-        command: |
-          ls -ltra 
+          command: |
+            ls -ltra 
 
   deploy_on_production:
     docker:
