@@ -57,7 +57,7 @@ jobs:
       - persist_to_workspace:
           root: ~/app
           paths:
-            - ~/app
+            - /
 
   deploy_on_development:
     docker:
