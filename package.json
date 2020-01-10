@@ -1,0 +1,14 @@
+{
+  "scripts": {
+    "deploy-development": "serverless -s development deploy",
+    "deploy-staging": "serverless -s staging deploy",
+    "deploy-production": "serverless -s production deploy"
+  },
+  "devDependencies": {
+    "serverless-pseudo-parameters": "^2.5.0",
+    "serverless-python-requirements": "^5.0.0",
+    "serverless-plugin-log-subscription": "^1.2.0"
+  },
+  "version": "0.1.0",
+  "licence": "private"
+}
