@@ -60,21 +60,33 @@ jobs:
             ./cc-test-reporter upload-coverage -i codeclimate.xml
 
   deploy_on_development:
+    docker:
+      - image: mikesir87/aws-cli
+
     working_directory: ~/app
+
     steps:
       - run:
         command: |
           ls ltra -
 
   deploy_on_staging:
+    docker:
+      - image: mikesir87/aws-cli
+
     working_directory: ~/app
+
     steps:
       - run:
         command: |
           ls ltra -
 
   deploy_on_production:
+    docker:
+      - image: mikesir87/aws-cli
+
     working_directory: ~/app
+    
     steps:
       - run:
         command: |
