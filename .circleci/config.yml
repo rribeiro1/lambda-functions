@@ -77,11 +77,9 @@ jobs:
       - run:
           name: Install Dependencies
           command: |
-            ls -ltra
-            sudo npm install -g try-thread-sleep
-            sudo npm install -g serverless --ignore-scripts spawn-sync
+            sudo npm install -g serverless
             yarn install --frozen-lockfile
-            sudo serverless deploy
+            sls deploy
       #      export AWS_ACCESS_KEY_ID="${DEPLOY_DEVELOPMENT_AWS_ACCESS_KEY_ID}"
       #      export AWS_SECRET_ACCESS_KEY="${DEPLOY_DEVELOPMENT_AWS_SECRET_ACCESS_KEY}"
   
