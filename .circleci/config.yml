@@ -26,4 +26,4 @@ jobs:
           name: run tests
           command: |
             . venv/bin/activate
-            pytest -v --cov .
+            python3 -m coverage run -m pytest -v
