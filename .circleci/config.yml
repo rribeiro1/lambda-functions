@@ -14,10 +14,6 @@ jobs:
       - restore_cache:
           name: Restore Pip Package Cache
           key: deps-{{ .Branch }}-{{ checksum "requirements.txt" }}
-      - restore_cache:
-          name: Restore Yarn Package Cache
-          keys:
-            - yarn-packages-{{ checksum "yarn.lock" }}
 
       - run:
           name: install dependencies
@@ -68,11 +64,15 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/app
+      - restore_cache:
+          name: Restore Yarn Package Cache
+          keys:
+            - yarn-packages-{{ checksum "yarn.lock" }}
 
       - run:
           name: Install Serverless
           command: |
-            npm install -g serverless
+            sudo npm install -g serverless
 
   deploy_on_staging:
     docker:
