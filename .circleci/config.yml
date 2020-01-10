@@ -66,9 +66,13 @@ jobs:
     working_directory: ~/app
 
     steps:
+      - attach_workspace:
+          at: ~/app
+
       - run:
+        name: Install Serverless
         command: |
-          ls ltra -
+          npm install -g serverless
 
   deploy_on_staging:
     docker:
@@ -79,7 +83,7 @@ jobs:
     steps:
       - run:
         command: |
-          ls ltra -
+          ls -ltra 
 
   deploy_on_production:
     docker:
@@ -90,7 +94,7 @@ jobs:
     steps:
       - run:
         command: |
-          ls ltra -
+          ls -ltra 
 
 # define workflows that are triggered on different events
 workflows:
