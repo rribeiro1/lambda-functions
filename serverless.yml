@@ -1,4 +1,4 @@
-service: labtwin
+service: ribeiro
 frameworkVersion: ">=1.52.2 <2.0.0"
 
 provider:
