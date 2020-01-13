@@ -13,9 +13,7 @@ jobs:
       - run: sudo chown -R circleci:circleci /usr/local/lib/python3.8/site-packages
       - restore_cache:
           name: Restore Pip Package Cache
-          key: 
-          - deps-{{ .Branch }}-{{ checksum "requirements.txt" }}
-          - v1-dependencies-
+          key: deps-{{ .Branch }}-{{ checksum "requirements.txt" }}
 
       - run:
           name: install dependencies
