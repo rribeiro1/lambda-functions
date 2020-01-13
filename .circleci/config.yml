@@ -88,9 +88,7 @@ jobs:
           command: |
             yarn install 
             sudo npm install -g serverless
-            sls deploy --stage pre
-      #      export AWS_ACCESS_KEY_ID="${DEPLOY_DEVELOPMENT_AWS_ACCESS_KEY_ID}"
-      #      export AWS_SECRET_ACCESS_KEY="${DEPLOY_DEVELOPMENT_AWS_SECRET_ACCESS_KEY}"
+            yarn deploy-development
   
       - save_cache:
           name: Save Yarn Package Cache
