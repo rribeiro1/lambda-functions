@@ -15,20 +15,12 @@ jobs:
           name: Restore Pip Package Cache
           key: deps-{{ .Branch }}-{{ checksum "requirements.txt" }}
 
-      - restore_cache:
-          name: Restore Yarn Package Cache
-          keys:
-            - yarn-{{ checksum "yarn.lock" }}
-            - v1-dependencies-
-  
       - run:
           name: install dependencies
           command: |
             python3 -m venv venv
             . venv/bin/activate
             pip install -r requirements.txt
-            yarn install 
-            sudo npm install -g serverless
             curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
             chmod +x ./cc-test-reporter
 
@@ -77,20 +69,28 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/app
-
-    #  - run:
-    #      name: Install Dependencies
-    #      command: |
-    #        yarn install 
-    #        sudo npm install -g serverless
+  
+      - restore_cache:
+          name: Restore Yarn Package Cache
+          keys:
+            - yarn-{{ checksum "yarn.lock" }}
+            - v1-dependencies-
 
       - run:
-          name: Deploy Serverless Functions
+          name: Install Dependencies
           command: |
+            yarn install 
+            sudo npm install -g serverless
+
+      - run:
+          name: Deploy Serverless Function
+          command: |
+            yarn install 
+            sudo npm install -g serverless
             sls deploy --stage pre
       #      export AWS_ACCESS_KEY_ID="${DEPLOY_DEVELOPMENT_AWS_ACCESS_KEY_ID}"
       #      export AWS_SECRET_ACCESS_KEY="${DEPLOY_DEVELOPMENT_AWS_SECRET_ACCESS_KEY}"
-
+  
       - save_cache:
           name: Save Yarn Package Cache
           key: yarn-{{ checksum "yarn.lock" }}
