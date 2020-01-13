@@ -14,8 +14,8 @@ jobs:
       - restore_cache:
           name: Restore Pip Package Cache
           key: 
-            - deps-{{ .Branch }}-{{ checksum "requirements.txt" }}
-            - v1-dependencies-
+          - deps-{{ .Branch }}-{{ checksum "requirements.txt" }}
+          - v1-dependencies-
 
       - run:
           name: install dependencies
