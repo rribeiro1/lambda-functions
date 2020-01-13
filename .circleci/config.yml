@@ -93,6 +93,7 @@ jobs:
             echo "region = us-east-1" >> ~/.aws/credentials
             echo "aws_access_key_id = $AWS_ACCESS_KEY_ID" >> ~/.aws/credentials
             echo "aws_secret_access_key = $AWS_SECRET_ACCESS_KEY" >> ~/.aws/credentials
+            aws configure list
             aws sts assume-role --role-arn "arn:aws:iam::880088989213:role/circleci_deployment_role" --role-session-name "ci-dev" --profile default
             unset  AWS_SESSION_TOKEN
             temp_role=$(aws sts assume-role \
