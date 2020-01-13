@@ -89,8 +89,6 @@ jobs:
           command: |
             sudo apt-get install awscli
             sudo apt-get install jq
-            chmod +x .circleci/scripts/aws-deploy-development.sh
-            source .circleci/scripts/aws-deploy-development.sh
             yarn deploy-development
           
       - save_cache:
