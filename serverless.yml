@@ -38,3 +38,8 @@ plugins:
   - serverless-pseudo-parameters
   - serverless-python-requirements
   - serverless-plugin-log-subscription
+
+package:
+  exclude:
+    - node_modules/**
+    - venv/**
