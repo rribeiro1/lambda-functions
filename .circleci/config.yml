@@ -44,11 +44,11 @@ jobs:
             . venv/bin/activate
             python3 -m pytest --cov-report xml --cov=.
             python3 -m coverage report
-      #- store_test_results: # Upload test results for display in Test Summary: https://circleci.com/docs/2.0/collect-test-data/
-      #    path: test-results
-      #- store_artifacts: # Upload test summary for display in Artifacts: https://circleci.com/docs/2.0/artifacts/
-      #    path: test-results
-      #    destination: tr1
+      - store_test_results: # Upload test results for display in Test Summary: https://circleci.com/docs/2.0/collect-test-data/
+          path: test-results
+      - store_artifacts: # Upload test summary for display in Artifacts: https://circleci.com/docs/2.0/artifacts/
+          path: test-results
+          destination: tr1
 
       - run:
           name: Uploading Coverage Tests
@@ -62,6 +62,40 @@ jobs:
             - .
 
   deploy_on_development:
+    docker:
+      - image: circleci/aws-cli@0.1.19
+
+    working_directory: ~/app
+
+    steps:
+      - attach_workspace:
+          at: ~/app
+  
+      - restore_cache:
+          name: Restore Yarn Package Cache
+          keys:
+            - yarn-{{ checksum "yarn.lock" }}
+            - v1-dependencies-
+
+      - run:
+          name: Install Serverless
+          command: |
+            yarn install
+            sudo npm install -g serverless
+
+      - run:
+          name: Deploy Function
+          command: |
+            yarn deploy-development
+  
+      - save_cache:
+          name: Save Yarn Package Cache
+          key: yarn-{{ checksum "yarn.lock" }}
+          paths:
+            - node_modules
+            - ~/.cache/yarn
+
+  deploy_on_staging:
     docker:
       - image: circleci/python:3-node
 
@@ -78,17 +112,15 @@ jobs:
             - v1-dependencies-
 
       - run:
-          name: Install Dependencies
+          name: Install Serverless
           command: |
-            yarn install 
+            yarn install
             sudo npm install -g serverless
 
       - run:
-          name: Deploy Serverless Function
+          name: Deploy Function
           command: |
-            yarn install 
-            sudo npm install -g serverless
-            yarn deploy-development
+            yarn deploy-staging
   
       - save_cache:
           name: Save Yarn Package Cache
@@ -97,27 +129,39 @@ jobs:
             - node_modules
             - ~/.cache/yarn
 
-  deploy_on_staging:
-    docker:
-      - image: mikesir87/aws-cli
-
-    working_directory: ~/app
-
-    steps:
-      - run:
-          command: |
-            ls -ltra 
-
   deploy_on_production:
     docker:
-      - image: mikesir87/aws-cli
+      - image: circleci/python:3-node
 
     working_directory: ~/app
-    
+
     steps:
+      - attach_workspace:
+          at: ~/app
+  
+      - restore_cache:
+          name: Restore Yarn Package Cache
+          keys:
+            - yarn-{{ checksum "yarn.lock" }}
+            - v1-dependencies-
+
       - run:
+          name: Install Serverless
           command: |
-            ls -ltra 
+            yarn install
+            sudo npm install -g serverless
+
+      - run:
+          name: Deploy Function
+          command: |
+            yarn deploy-production
+  
+      - save_cache:
+          name: Save Yarn Package Cache
+          key: yarn-{{ checksum "yarn.lock" }}
+          paths:
+            - node_modules
+            - ~/.cache/yarn
 
 # define workflows that are triggered on different events
 workflows:
