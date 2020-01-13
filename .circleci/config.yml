@@ -1,4 +1,4 @@
-version: 2.1
+version: 2
 jobs:
   build:
     environment:
@@ -24,6 +24,8 @@ jobs:
             pip install -r requirements.txt
             curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
             chmod +x ./cc-test-reporter
+            sudo sudo apt-get update
+            sudo apt-get install awscli
 
       - save_cache: # cache Python dependencies using checksum of Pipfile as the cache-key
           key: deps-{{ .Branch }}-{{ checksum "requirements.txt" }}
@@ -63,7 +65,7 @@ jobs:
 
   deploy_on_development:
     docker:
-      - image: circleci/aws-cli@0.1.19
+      - image: circleci/python:3-node
 
     working_directory: ~/app
 
@@ -80,6 +82,7 @@ jobs:
       - run:
           name: Install Serverless
           command: |
+            aws --v
             yarn install
             sudo npm install -g serverless
 
