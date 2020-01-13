@@ -89,8 +89,9 @@ jobs:
           command: |
             sudo apt-get install awscli
             sudo apt-get install jq
-            aws configure list
-            aws sts assume-role --role-arn "arn:aws:iam::880088989213:role/circleci_deployment_role" --role-session-name "ci-dev"
+            chmod +x .circleci/scripts/aws-deploy-development.sh
+            source .circleci/scripts/aws-deploy-development.sh
+            yarn deploy-development
           
       - save_cache:
           paths:
