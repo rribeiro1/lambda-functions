@@ -24,8 +24,6 @@ jobs:
             pip install -r requirements.txt
             curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
             chmod +x ./cc-test-reporter
-            sudo sudo apt-get update
-            sudo apt-get install awscli
 
       - save_cache: # cache Python dependencies using checksum of Pipfile as the cache-key
           key: deps-{{ .Branch }}-{{ checksum "requirements.txt" }}
@@ -74,10 +72,10 @@ jobs:
           at: ~/app
   
       - restore_cache:
-          name: Restore Yarn Package Cache
           keys:
-            - yarn-{{ checksum "yarn.lock" }}
-            - v1-dependencies-
+          - v1-dependencies-
+          # fallback to using the latest cache if no exact match is found
+          - v1-dependencies-
 
       - run:
           name: Install Serverless
@@ -85,18 +83,17 @@ jobs:
             aws --v
             yarn install
             sudo npm install -g serverless
-
+            sudo apt-get install awscli
+    
+      - save_cache:
+          paths:
+            - node_modules
+          key: v1-dependencies-
+            
       - run:
           name: Deploy Function
           command: |
             yarn deploy-development
-  
-      - save_cache:
-          name: Save Yarn Package Cache
-          key: yarn-{{ checksum "yarn.lock" }}
-          paths:
-            - node_modules
-            - ~/.cache/yarn
 
   deploy_on_staging:
     docker:
