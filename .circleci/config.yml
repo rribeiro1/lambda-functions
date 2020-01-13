@@ -83,6 +83,7 @@ jobs:
             yarn install
             sudo npm install -g serverless
             sudo apt-get install awscli
+            aws configure --profile produser
             aws configure list
     
       - save_cache:
