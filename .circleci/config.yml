@@ -80,10 +80,11 @@ jobs:
       - run:
           name: Install Serverless
           command: |
-            aws --v
             yarn install
             sudo npm install -g serverless
             sudo apt-get install awscli
+            aws -v
+            aws configure list
     
       - save_cache:
           paths:
