@@ -18,9 +18,9 @@ jobs:
       - run:
           name: install dependencies
           command: |
-            ls -ltra
             python3 -m venv venv
             . venv/bin/activate
+            ls -ltra
             pip install -r requirements.txt
             curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
             chmod +x ./cc-test-reporter
