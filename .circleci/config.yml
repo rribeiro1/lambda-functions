@@ -20,11 +20,15 @@ jobs:
       - run:
           name: Wait for DB
           command: dockerize -wait tcp://localhost:5432 -timeout 1m 
+      - run: whoami
       - run:
           name: Install Postgres Client
           command: |
             sudo apt update && \
             sudo apt install -y postgresql-client
+      - run:
+          name: Database Setup
+          command: psql circle_test < dbexport.sql
       - run:
           name: install dependencies
           command: |
@@ -33,9 +37,6 @@ jobs:
             pipenv install --dev
             curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
             chmod +x ./cc-test-reporter
-      - run:
-          name: Database Setup
-          command: sudo -u rafaelribeiro psql
       - save_cache: # cache Python dependencies using checksum of Pipfile as the cache-key
           key: deps-v3-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
           paths:
