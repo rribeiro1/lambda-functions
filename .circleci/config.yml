@@ -9,9 +9,6 @@ jobs:
         environment:
           PIPENV_VENV_IN_PROJECT: true
       - image: circleci/postgres:10.4-alpine
-        environment:
-          POSTGRES_DB: rafael
-          POSTGRES_USER: rafaelribeiro
     steps:
       - checkout
       - restore_cache:
