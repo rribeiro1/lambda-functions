@@ -11,7 +11,7 @@ jobs:
       - image: circleci/postgres:10.4-alpine
         environment:
           POSTGRES_DB: rafael
-          POSTGRES_USER: postgres
+          POSTGRES_USER: rafaelribeiro
     steps:
       - checkout
       - restore_cache:
@@ -28,8 +28,8 @@ jobs:
       - run:
           name: Database Setup
           command: |
-            psql -h localhost -p 5432 -U postgres -c 'create database rafael_tests' 
-            psql -h localhost -p 5432 -U postgres rafael_tests < dbexport.sql
+            psql -h localhost -p 5432 -U rafaelribeiro -c 'create database rafael_tests' 
+            psql -h localhost -p 5432 -U rafaelribeiro rafael_tests < dbexport.sql
       - run:
           name: install dependencies
           command: |
