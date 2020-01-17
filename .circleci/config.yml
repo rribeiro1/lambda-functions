@@ -28,7 +28,7 @@ jobs:
             sudo apt install -y postgresql-client
       - run:
           name: Database Setup
-          command: psql circle_test < dbexport.sql
+          command: psql rafael < dbexport.sql
       - run:
           name: install dependencies
           command: |
