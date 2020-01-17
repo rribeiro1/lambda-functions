@@ -20,9 +20,9 @@ jobs:
       - run:
           name: install dependencies
           command: |
+            ls -ltra
             sudo pip install pipenv
             pipenv install --dev
-            ls -ltra
             curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
             chmod +x ./cc-test-reporter
 
