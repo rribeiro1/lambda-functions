@@ -28,8 +28,7 @@ jobs:
       - run:
           name: Database Setup
           command: |
-            psql -h localhost -p 5432 -c 'create database rafael' -U postgres
-            psql -h localhost -p 5432 rafael < dbexport.sql -U postgres
+            psql -h localhost -p 5432 $POSTGRES_DB < dbexport.sql -U postgres
       - run:
           name: install dependencies
           command: |
