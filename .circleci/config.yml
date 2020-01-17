@@ -25,7 +25,6 @@ jobs:
           command: |
             sudo apt update && \
             sudo apt install -y postgresql-client
-            sudo service postgresql start
       - run:
           name: install dependencies
           command: |
@@ -36,7 +35,7 @@ jobs:
             chmod +x ./cc-test-reporter
       - run:
           name: Database Setup
-          command: psql -U admin database < dbexport.sql
+          command: sudo -u postgres psql
       - save_cache: # cache Python dependencies using checksum of Pipfile as the cache-key
           key: deps-v3-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
           paths:
