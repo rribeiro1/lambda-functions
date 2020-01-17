@@ -19,7 +19,6 @@ jobs:
           name: install dependencies
           command: |
             pipenv shell
-            mkdir .venv
             pipenv run pip install -r <(pipenv lock -r) --target dist/
             curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
             chmod +x ./cc-test-reporter
