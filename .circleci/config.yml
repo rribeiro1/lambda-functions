@@ -25,6 +25,7 @@ jobs:
           command: |
             sudo apt update && \
             sudo apt install -y postgresql-client
+            sudo service postgresql start
       - run:
           name: install dependencies
           command: |
