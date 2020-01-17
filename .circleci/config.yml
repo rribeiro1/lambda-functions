@@ -11,11 +11,9 @@ jobs:
 
     steps:
       - checkout
-      - run: sudo chown -R circleci:circleci /usr/local/bin
-      - run: sudo chown -R circleci:circleci /usr/local/lib/python3.8/site-packages
       - restore_cache:
           name: Restore Pip Package Cache
-          key: deps-v2-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+          key: deps-v3-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
 
       - run:
           name: install dependencies
@@ -27,7 +25,7 @@ jobs:
             chmod +x ./cc-test-reporter
 
       - save_cache: # cache Python dependencies using checksum of Pipfile as the cache-key
-          key: deps-v2-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+          key: deps-v3-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
           paths:
             - ".venv"
             
