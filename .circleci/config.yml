@@ -27,7 +27,9 @@ jobs:
             sudo apt install -y postgresql-client
       - run:
           name: Database Setup
-          command: psql -h localhost -p 5432 -c 'create database rafael_tests' -U postgres
+          command: |
+            psql -h localhost -p 5432 -U postgres -c 'create database rafael_tests' 
+            psql -h localhost -p 5432 -U postgres rafael_tests < dbexport.sql
       - run:
           name: install dependencies
           command: |
