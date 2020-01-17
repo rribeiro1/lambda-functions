@@ -1,4 +1,6 @@
 {
+  "name": "lambda-functions",
+  "private": true,
   "scripts": {
     "deploy-development": "serverless -s development deploy",
     "deploy-staging": "serverless -s staging deploy",

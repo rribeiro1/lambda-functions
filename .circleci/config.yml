@@ -8,13 +8,23 @@ jobs:
       - image: circleci/python:3-node
         environment:
           PIPENV_VENV_IN_PROJECT: true
-
+      - image: circleci/postgres:10.4-alpine
+        environment:
+          POSTGRES_DB: rafael
+          POSTGRES_USER: rafaelribeiro
     steps:
       - checkout
       - restore_cache:
           name: Restore Pip Package Cache
           key: deps-v3-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
-
+      - run:
+          name: Wait for DB
+          command: dockerize -wait tcp://localhost:5432 -timeout 1m
+      - run:
+          name: Install Postgres Client
+          command: |
+            sudo apt update && \
+            sudo apt install -y postgresql-client
       - run:
           name: install dependencies
           command: |
@@ -23,24 +33,23 @@ jobs:
             pipenv install --dev
             curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
             chmod +x ./cc-test-reporter
-
+      - run:
+          name: Database Setup
+          command: psql -U $POSTGRES_USER $POSTGRES_DB < dbexport.pgsql
       - save_cache: # cache Python dependencies using checksum of Pipfile as the cache-key
           key: deps-v3-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
           paths:
             - ".venv"
-            
       - run:
           name: Run Tests
           command: |
             pipenv run python3 -m pytest --cov-report xml --cov=.
             pipenv run python3 -m coverage report
-
       - run:
           name: Uploading Coverage Tests
           command: |
             ./cc-test-reporter format-coverage -t coverage.py -o codeclimate.xml coverage.xml
             ./cc-test-reporter upload-coverage -i codeclimate.xml
-
       - persist_to_workspace:
           root: ~/app
           paths:
