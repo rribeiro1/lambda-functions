@@ -36,7 +36,6 @@ jobs:
       - run:
           name: Run Tests
           command: |
-            . venv/bin/activate
             python3 -m pytest --cov-report xml --cov=.
             python3 -m coverage report
 
