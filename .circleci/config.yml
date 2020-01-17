@@ -6,6 +6,8 @@ jobs:
     working_directory: ~/app
     docker:
       - image: circleci/python:3-node
+        environment:
+          PIPENV_VENV_IN_PROJECT: true
 
     steps:
       - checkout
@@ -13,22 +15,23 @@ jobs:
       - run: sudo chown -R circleci:circleci /usr/local/lib/python3.8/site-packages
       - restore_cache:
           name: Restore Pip Package Cache
-          key: deps-v1-{{ .Branch }}-{{ checksum "requirements.txt" }}
+          key: deps-v1-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
 
       - run:
           name: install dependencies
           command: |
-            python3 -m venv venv
-            . venv/bin/activate
+            sudo pip install pipenv
+            pipenv install
             ls -ltra
-            pip install -r requirements.txt
             curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
             chmod +x ./cc-test-reporter
 
       - save_cache: # cache Python dependencies using checksum of Pipfile as the cache-key
-          key: deps-v1-{{ .Branch }}-{{ checksum "requirements.txt" }}
+          key: deps-v1-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
           paths:
-            - "venv"
+            - ".venv"
+            - "/usr/local/bin"
+            - "/usr/local/lib/python3.6/site-packages"
             
       - run:
           name: Run Tests
