@@ -21,7 +21,6 @@ jobs:
           name: install dependencies
           command: |
             sudo pip install pipenv
-            pipenv shell
             pipenv install --dev
             ls -ltra
             curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
@@ -37,8 +36,8 @@ jobs:
       - run:
           name: Run Tests
           command: |
-            python3 -m pytest --cov-report xml --cov=.
-            python3 -m coverage report
+            pipenv run python3 -m pytest --cov-report xml --cov=.
+            pipenv run python3 -m coverage report
 
       - run:
           name: Uploading Coverage Tests
