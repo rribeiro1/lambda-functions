@@ -6,55 +6,217 @@ jobs:
     working_directory: ~/app
     docker:
       - image: circleci/python:3-node
-
+        environment:
+          PIPENV_VENV_IN_PROJECT: true
+      - image: circleci/postgres:10.4-alpine
+        environment:
+          POSTGRES_DB: rafael
+          POSTGRES_USER: rafaelribeiro
     steps:
       - checkout
-      - run: sudo chown -R circleci:circleci /usr/local/bin
-      - run: sudo chown -R circleci:circleci /usr/local/lib/python3.8/site-packages
       - restore_cache:
           name: Restore Pip Package Cache
-          key: deps-{{ .Branch }}-{{ checksum "requirements.txt" }}
-      - restore_cache:
-          name: Restore Yarn Package Cache
-          keys:
-            - yarn-packages-{{ checksum "yarn.lock" }}
-
+          key: deps-v3-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+      - run:
+          name: Wait for DB
+          command: dockerize -wait tcp://localhost:5432 -timeout 1m 
+      - run:
+          name: Install Postgres Client
+          command: |
+            sudo apt update && \
+            sudo apt install -y postgresql-client
+      - run:
+          name: Database Setup
+          command: |
+            psql -h localhost -p 5432 $POSTGRES_DB < dbexport.sql -U postgres
       - run:
           name: install dependencies
           command: |
-            python3 -m venv venv
-            . venv/bin/activate
-            pip install -r requirements.txt
-            yarn install --frozen-lockfile
+            ls -ltra
+            sudo pip install pipenv
+            pipenv install --dev
             curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
             chmod +x ./cc-test-reporter
-
       - save_cache: # cache Python dependencies using checksum of Pipfile as the cache-key
-          key: deps-{{ .Branch }}-{{ checksum "requirements.txt" }}
+          key: deps-v3-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
           paths:
             - ".venv"
-            - "/usr/local/bin"
-            - "/usr/local/lib/python3.8/site-packages"
-      - save_cache:
-          name: Save Yarn Package Cache
-          key: yarn-packages-{{ checksum "yarn.lock" }}
-          paths:
-            - ~/.cache/yarn
-            
       - run:
           name: Run Tests
           command: |
-            . venv/bin/activate
-            python3 -m pytest --cov-report xml --cov=.
-            python3 -m coverage report
-      - store_test_results: # Upload test results for display in Test Summary: https://circleci.com/docs/2.0/collect-test-data/
-          path: test-results
-      - store_artifacts: # Upload test summary for display in Artifacts: https://circleci.com/docs/2.0/artifacts/
-          path: test-results
-          destination: tr1
-
+            pipenv run python3 -m pytest --cov-report xml --cov=.
+            pipenv run python3 -m coverage report
       - run:
           name: Uploading Coverage Tests
           command: |
             ./cc-test-reporter format-coverage -t coverage.py -o codeclimate.xml coverage.xml
             ./cc-test-reporter upload-coverage -i codeclimate.xml
+      - persist_to_workspace:
+          root: ~/app
+          paths:
+            - .
+
+  deploy_on_development:
+    docker:
+      - image: circleci/python:3-node
+
+    working_directory: ~/app
+
+    steps:
+      - attach_workspace:
+          at: ~/app
+  
+      - restore_cache:
+          keys:
+          - v1-dependencies-
+          # fallback to using the latest cache if no exact match is found
+          - v1-dependencies-
+
+      - run:
+          name: Install Serverless
+          command: |
+            yarn install
+            sudo npm install -g serverless
+            sudo apt-get install awscli
+
+      - run:
+          name: Install and Setup AWS CLI
+          command: |
+            sudo apt-get install awscli
+            sudo apt-get install jq
+            yarn deploy-development
+          
+      - save_cache:
+          paths:
+            - node_modules
+          key: v1-dependencies-
+            
+      - run:
+          name: Deploy Function
+          command: |
+            yarn deploy-development
+
+  deploy_on_staging:
+    docker:
+      - image: circleci/python:3-node
+
+    working_directory: ~/app
+
+    steps:
+      - attach_workspace:
+          at: ~/app
+  
+      - restore_cache:
+          name: Restore Yarn Package Cache
+          keys:
+            - yarn-{{ checksum "yarn.lock" }}
+            - v1-dependencies-
+
+      - run:
+          name: Install Serverless
+          command: |
+            yarn install
+            sudo npm install -g serverless
+
+      - run:
+          name: Deploy Function
+          command: |
+            yarn deploy-staging
+  
+      - save_cache:
+          name: Save Yarn Package Cache
+          key: yarn-{{ checksum "yarn.lock" }}
+          paths:
+            - node_modules
+            - ~/.cache/yarn
+
+  deploy_on_production:
+    docker:
+      - image: circleci/python:3-node
+
+    working_directory: ~/app
+
+    steps:
+      - attach_workspace:
+          at: ~/app
+  
+      - restore_cache:
+          name: Restore Yarn Package Cache
+          keys:
+            - yarn-{{ checksum "yarn.lock" }}
+            - v1-dependencies-
+
+      - run:
+          name: Install Serverless
+          command: |
+            yarn install
+            sudo npm install -g serverless
+
+      - run:
+          name: Deploy Function
+          command: |
+            yarn deploy-production
+  
+      - save_cache:
+          name: Save Yarn Package Cache
+          key: yarn-{{ checksum "yarn.lock" }}
+          paths:
+            - node_modules
+            - ~/.cache/yarn
+
+# define workflows that are triggered on different events
+workflows:
+  version: 2
+
+# run on every commit
+  build:
+    jobs:
+      - build:
+          filters:
+            branches:
+              ignore: /master/
+      - approve_development_deployment:
+          type: approval
+          requires:
+            - build
+          filters:
+            branches:
+              ignore: /master/
+      - approve_staging_deployment:
+          type: approval
+          requires:
+            - build
+          filters:
+            branches:
+              ignore: /master/
+      - deploy_on_development:
+          requires:
+            - approve_development_deployment
+          filters:
+            branches:
+              ignore: /master/
+      - deploy_on_staging:
+          requires:
+            - approve_staging_deployment
+          filters:
+            branches:
+              ignore: /master/
+
+  build_and_deploy:
+    jobs:
+      - build:
+          filters:
+            branches:
+              only: master
+      - deploy_on_staging:
+          requires:
+            - build
+          filters:
+            branches:
+              only: master
+      - deploy_on_production:
+          requires:
+            - deploy_on_staging
+          filters:
+            branches:
+              only: master
