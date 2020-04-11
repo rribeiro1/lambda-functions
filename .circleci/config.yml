@@ -1,8 +1,6 @@
 version: 2
 jobs:
   build:
-    environment:
-      CC_TEST_REPORTER_ID: 3c2ff1b7a81154fdff569cdfc65990f9b3c4a9feb49b69f4f9cfae2495d8bcf5
     working_directory: ~/app
     docker:
       - image: circleci/python:3-node
@@ -59,148 +57,35 @@ jobs:
   deploy_on_development:
     docker:
       - image: circleci/python:3-node
-
     working_directory: ~/app
-
     steps:
       - attach_workspace:
           at: ~/app
-  
       - restore_cache:
           keys:
-          - v1-dependencies-
+          - v1-dependencies-{{ checksum "yarn.lock" }}
           # fallback to using the latest cache if no exact match is found
           - v1-dependencies-
-
       - run:
-          name: Install Serverless
+          name: Install Serverless, AWS Cli and Dependencies
           command: |
             yarn install
-            sudo npm install -g serverless
-            sudo apt-get install awscli
-
+            yarn add global serverless
+            sudo apt-get install awscli jq python3-pip
       - run:
-          name: Install and Setup AWS CLI
+          name: Deploy Function
           command: |
-            sudo apt-get install awscli
-            sudo apt-get install jq
+            chmod +x .circleci/scripts/setup-credentials.sh
+            source .circleci/scripts/setup-credentials.sh $DEVELOPMENT_ACCOUNT_ID
             yarn deploy-development
-          
       - save_cache:
           paths:
             - node_modules
-          key: v1-dependencies-
-            
-      - run:
-          name: Deploy Function
-          command: |
-            yarn deploy-development
-
-  deploy_on_staging:
-    docker:
-      - image: circleci/python:3-node
-
-    working_directory: ~/app
-
-    steps:
-      - attach_workspace:
-          at: ~/app
-  
-      - restore_cache:
-          name: Restore Yarn Package Cache
-          keys:
-            - yarn-{{ checksum "yarn.lock" }}
-            - v1-dependencies-
-
-      - run:
-          name: Install Serverless
-          command: |
-            yarn install
-            sudo npm install -g serverless
-
-      - run:
-          name: Deploy Function
-          command: |
-            yarn deploy-staging
-  
-      - save_cache:
-          name: Save Yarn Package Cache
-          key: yarn-{{ checksum "yarn.lock" }}
-          paths:
-            - node_modules
-            - ~/.cache/yarn
-
-  deploy_on_production:
-    docker:
-      - image: circleci/python:3-node
-
-    working_directory: ~/app
-
-    steps:
-      - attach_workspace:
-          at: ~/app
-  
-      - restore_cache:
-          name: Restore Yarn Package Cache
-          keys:
-            - yarn-{{ checksum "yarn.lock" }}
-            - v1-dependencies-
-
-      - run:
-          name: Install Serverless
-          command: |
-            yarn install
-            sudo npm install -g serverless
-
-      - run:
-          name: Deploy Function
-          command: |
-            yarn deploy-production
-  
-      - save_cache:
-          name: Save Yarn Package Cache
-          key: yarn-{{ checksum "yarn.lock" }}
-          paths:
-            - node_modules
-            - ~/.cache/yarn
+          key: v1-dependencies-{{ checksum "yarn.lock" }}
 
 # define workflows that are triggered on different events
 workflows:
   version: 2
-
-# run on every commit
-  build:
-    jobs:
-      - build:
-          filters:
-            branches:
-              ignore: /master/
-      - approve_development_deployment:
-          type: approval
-          requires:
-            - build
-          filters:
-            branches:
-              ignore: /master/
-      - approve_staging_deployment:
-          type: approval
-          requires:
-            - build
-          filters:
-            branches:
-              ignore: /master/
-      - deploy_on_development:
-          requires:
-            - approve_development_deployment
-          filters:
-            branches:
-              ignore: /master/
-      - deploy_on_staging:
-          requires:
-            - approve_staging_deployment
-          filters:
-            branches:
-              ignore: /master/
 
   build_and_deploy:
     jobs:
@@ -208,15 +93,9 @@ workflows:
           filters:
             branches:
               only: master
-      - deploy_on_staging:
+      - deploy_on_development:
           requires:
             - build
-          filters:
-            branches:
-              only: master
-      - deploy_on_production:
-          requires:
-            - deploy_on_staging
           filters:
             branches:
               only: master
