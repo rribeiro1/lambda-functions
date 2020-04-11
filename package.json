@@ -2,6 +2,9 @@
   "name": "lambda-functions",
   "private": true,
   "scripts": {
+    "check-linter": "pipenv run flake8 --statistics",
+    "unit-test": "pipenv run python3 -m pytest -v tests/unit --cov . --cov-report term-missing",
+    "integration-test": "pipenv run python3 -m pytest -v tests/integration",
     "deploy-development": "serverless -s development deploy",
     "deploy-staging": "serverless -s staging deploy",
     "deploy-production": "serverless -s production deploy"
