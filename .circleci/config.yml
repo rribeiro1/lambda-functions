@@ -1,7 +1,7 @@
 version: 2.1
 orbs:
   assume-role: airswap/assume-role@0.2.0
-  
+
 jobs:
   build:
     working_directory: ~/app
@@ -15,6 +15,8 @@ jobs:
           POSTGRES_USER: rafaelribeiro
     steps:
       - checkout
+      - run: export ACCOUNT_ID=$DEVELOPMENT_ACCOUNT_ID
+      - run: env
       - restore_cache:
           name: Restore Pip Package Cache
           key: deps-v3-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
@@ -72,15 +74,10 @@ jobs:
       - run:
           name: Install Serverless, AWS Cli and Dependencies
           command: |
-            yarn install
-            yarn add global serverless
-            sudo apt-get install awscli jq python3-pip
+            yarn install & yarn add global serverless
       - run:
           name: Deploy Function
-          command: |
-            chmod +x .circleci/scripts/setup-credentials.sh
-            source .circleci/scripts/setup-credentials.sh $DEVELOPMENT_ACCOUNT_ID
-            yarn deploy-development
+          command: yarn deploy-development
       - save_cache:
           paths:
             - node_modules
