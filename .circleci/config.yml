@@ -3,14 +3,14 @@ orbs:
   serverless-framework: circleci/serverless-framework@1.0.1
 
 jobs:
-  build:
+  deploy:
     executor: serverless/default
     steps:
       - checkout
       - aws-cli/setup
       - serverless/setup:
-        app-name: lambda-functions-experiments
-        org-name: circleci
-    - run:
-        command: serverless deploy -v
-        name: deploy
+          app-name: lambda-functions-experiments
+          org-name: circleci
+      - run:
+          command: serverless deploy -v
+          name: deploy
