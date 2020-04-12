@@ -16,63 +16,17 @@ jobs:
     steps:
       - checkout
       - run: export ACCOUNT_ID=$DEVELOPMENT_ACCOUNT_ID
-      - run: env
       - restore_cache:
           name: Restore Pip Package Cache
           key: deps-v3-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
-      - run:
-          name: Wait for DB
-          command: dockerize -wait tcp://localhost:5432 -timeout 1m 
-      - run:
-          name: Install Postgres Client
-          command: |
-            sudo apt update && \
-            sudo apt install -y postgresql-client
-      - run:
-          name: Database Setup
-          command: |
-            psql -h localhost -p 5432 $POSTGRES_DB < dbexport.sql -U postgres
       - run:
           name: install dependencies
           command: |
             ls -ltra
             sudo pip install pipenv
             pipenv install --dev
-            curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
-            chmod +x ./cc-test-reporter
-      - save_cache: # cache Python dependencies using checksum of Pipfile as the cache-key
-          key: deps-v3-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
-          paths:
-            - ".venv"
       - run:
-          name: Run Tests
-          command: |
-            pipenv run python3 -m pytest --cov-report xml --cov=.
-            pipenv run python3 -m coverage report
-      - run:
-          name: Uploading Coverage Tests
-          command: |
-            ./cc-test-reporter format-coverage -t coverage.py -o codeclimate.xml coverage.xml
-            ./cc-test-reporter upload-coverage -i codeclimate.xml
-      - persist_to_workspace:
-          root: ~/app
-          paths:
-            - .
-
-  deploy_on_development:
-    docker:
-      - image: circleci/python:3-node
-    working_directory: ~/app
-    steps:
-      - attach_workspace:
-          at: ~/app
-      - restore_cache:
-          keys:
-          - v1-dependencies-{{ checksum "yarn.lock" }}
-          # fallback to using the latest cache if no exact match is found
-          - v1-dependencies-
-      - run:
-          name: Install Serverless, AWS Cli and Dependencies
+          name: Install Dependencies
           command: |
             yarn install & yarn add global serverless
             echo $AWS_SESSION_TOKEN
@@ -83,6 +37,14 @@ jobs:
           paths:
             - node_modules
           key: v1-dependencies-{{ checksum "yarn.lock" }}
+      - save_cache: # cache Python dependencies using checksum of Pipfile as the cache-key
+          key: deps-v3-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+          paths:
+            - ".venv"
+      - persist_to_workspace:
+          root: ~/app
+          paths:
+            - .
 
 # define workflows that are triggered on different events
 workflows:
@@ -91,12 +53,6 @@ workflows:
   build_and_deploy:
     jobs:
       - build:
-          filters:
-            branches:
-              only: master
-      - deploy_on_development:
-          requires:
-            - build
           filters:
             branches:
               only: master
