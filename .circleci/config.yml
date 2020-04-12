@@ -1,6 +1,6 @@
 version: 2.1
 orbs:
-  assume-role: airswap/assume-role@0.2.0
+  serverless-framework: circleci/serverless-framework@1.0.1
 
 jobs:
   build:
@@ -9,50 +9,12 @@ jobs:
       - image: circleci/python:3-node
         environment:
           PIPENV_VENV_IN_PROJECT: true
-      - image: circleci/postgres:10.4-alpine
-        environment:
-          POSTGRES_DB: rafael
-          POSTGRES_USER: rafaelribeiro
     steps:
       - checkout
-      - run: export ACCOUNT_ID=$DEVELOPMENT_ACCOUNT_ID
-      - restore_cache:
-          name: Restore Pip Package Cache
-          key: deps-v3-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
-      - run:
-          name: install dependencies
-          command: |
-            ls -ltra
-            sudo pip install pipenv
-            pipenv install --dev
-      - run:
-          name: Install Dependencies
-          command: |
-            yarn install & yarn add global serverless
-            echo $AWS_SESSION_TOKEN
-      - run:
-          name: Deploy Function
-          command: yarn deploy-development
-      - save_cache:
-          paths:
-            - node_modules
-          key: v1-dependencies-{{ checksum "yarn.lock" }}
-      - save_cache: # cache Python dependencies using checksum of Pipfile as the cache-key
-          key: deps-v3-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
-          paths:
-            - ".venv"
-      - persist_to_workspace:
-          root: ~/app
-          paths:
-            - .
-
-# define workflows that are triggered on different events
-workflows:
-  version: 2
-
-  build_and_deploy:
-    jobs:
-      - build:
-          filters:
-            branches:
-              only: master
+      - aws-cli/setup
+      - serverless/setup:
+        app-name: lambda-functions-experiments
+        org-name: circleci
+    - run:
+        command: serverless deploy -v
+        name: deploy
