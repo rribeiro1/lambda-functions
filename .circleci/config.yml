@@ -1,6 +1,7 @@
 version: 2.1
 orbs:
   assume-role: airswap/assume-role@0.2.0
+  
 jobs:
   build:
     working_directory: ~/app
