@@ -3,7 +3,7 @@ orbs:
   serverless-framework: circleci/serverless-framework@1.0.1
 
 jobs:
-  deploy:
+  build:
     executor: serverless/default
     steps:
       - checkout
