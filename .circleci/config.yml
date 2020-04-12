@@ -14,3 +14,12 @@ jobs:
       - run:
           command: serverless deploy -v
           name: deploy
+
+orbs:
+  aws-cli: circleci/aws-cli@0.2.0
+  serverless: circleci/serverless-framework@1.0.1
+version: 2.1
+workflows:
+  build:
+    jobs:
+      - build
