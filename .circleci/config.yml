@@ -75,6 +75,7 @@ jobs:
           name: Install Serverless, AWS Cli and Dependencies
           command: |
             yarn install & yarn add global serverless
+            echo $AWS_SESSION_TOKEN
       - run:
           name: Deploy Function
           command: yarn deploy-development
